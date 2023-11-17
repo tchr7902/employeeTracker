@@ -39,25 +39,26 @@ function init() {
         },
     ])
     .then((answers) => {
-        if(answers == 'View all departments') {
+        if(answers.action === 'View all departments') {
             viewAllDepartments();
-        } else if (answers == 'View all roles') {
+        } else if (answers.action === 'View all roles') {
             viewAllRoles();
-        } else if (answers == 'View all employees') {
+        } else if (answers.action === 'View all employees') {
             viewAllEmployees();
-        } else if (answers == 'Add a department') {
+        } else if (answers.action === 'Add a department') {
             addDepartment();
-        } else if (answers == 'Add a role') {
+        } else if (answers.action === 'Add a role') {
             addRole();
-        } else if (answers == 'Add an employee') {
+        } else if (answers.action === 'Add an employee') {
             addEmployee();
-        } else if (answers == 'Update an employee role') {
+        } else if (answers.action === 'Update an employee role') {
             updateEmployeeRole();
-        } else if (answers == 'Exit') {
+        } else if (answers.action === 'Exit') {
             db.end();
             console.log('Exiting application!')
         } else {
             console.log('Invalid input!')
+            init();
         }
     })
 }
@@ -142,7 +143,7 @@ function addRole() {
         },
     ])
     .then((answers) => {
-        const query = 'INSERT INTO roles (name) VALUES (?)';
+        const query = 'INSERT INTO roles (title) VALUES (?)';
 
         db.query(query, [answers.roleName], (err, results) => {
             if(err) {
@@ -162,14 +163,14 @@ function addEmployee() {
     inquirer.prompt([
         {
             type: 'input',
-            name: 'employeeName',
+            name: 'employeeFirstName',
             message: 'Enter the name of the employee',
         },
     ])
     .then((answers) => {
-        const query = 'INSERT INTO employee (name) VALUES (?)';
+        const query = 'INSERT INTO employees (first_name) VALUES (?)';
 
-        db.query(query, [answers.employeeName], (err, results) => {
+        db.query(query, [answers.employeeFirstName], (err, results) => {
             if(err) {
                 console.error(err);
             } else {
@@ -186,3 +187,5 @@ function addEmployee() {
 function updateEmployeeRole() {
 
 };
+
+init();
