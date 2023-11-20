@@ -140,7 +140,7 @@ async function addDepartment() {
 
 ////////////////////////////////////
 async function addRole() {
-    const departmentQuery = 'SELECT id, name FROM departments';
+    const departments = await queryAsync('SELECT id, name FROM departments')
     
     const answers = await promptAsync([
                 {
@@ -161,10 +161,10 @@ async function addRole() {
                 },
             ])
 
-        const query = 'INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)';
+        const query = 'INSERT INTO roles (title, salary, departments_id) VALUES (?, ?, ?)';
 
         try {
-            await queryAsync(query, [answers.rolename, answers.roleSalary, answers.departmentId])
+            await queryAsync(query, [answers.roleName, answers.roleSalary, answers.departmentId])
             console.log('Role added successfully!');
         } catch (err) {
             console.error(err);
@@ -177,32 +177,32 @@ async function addRole() {
 ////////////////////////////////////
 async function addEmployee() {
 
-const roles = await queryAsync('SELECT id, title FROM roles');
-const employees = await queryAsync('SELECT id, CONCAT(first_name, " ", last_name AS manager FROM employees');
+    const roles = await queryAsync('SELECT id, title FROM roles;');
+    const employees = await queryAsync('SELECT id, CONCAT(first_name, " ", last_name) AS manager FROM employees;');
 
-const answers = await promptAsync([
-    {
-        type: 'input',
-        name: 'employeeFirstName',
-        message: 'Enter the first name of the employee',
-    },
-    {
-        type: 'input',
-        name: 'employeeLastName',
-        message: 'Enter the last name of the employee',
-    },
-    {
-        type: 'list',
-        name: 'roleId',
-        message: 'Select the role for the employee',
-        choices: roles.map(role => ({ name: role.title, value: role.id })),
-    },
-    {
-        type: 'list',
-        name: 'managerId',
-        message: 'Select the manager for the employee',
-        choices: [{ name: 'None', value: null }, ...employees.map(employee => ({ name: employee.manager, value: employee.id }))]
-    },
+    const answers = await promptAsync([
+        {
+            type: 'input',
+            name: 'employeeFirstName',
+            message: 'Enter the first name of the employee',
+        },
+        {
+            type: 'input',
+            name: 'employeeLastName',
+            message: 'Enter the last name of the employee',
+        },
+        {
+            type: 'list',
+            name: 'roleId',
+            message: 'Select the role for the employee',
+            choices: roles.map(role => ({ name: role.title, value: role.id })),
+        },
+        {
+            type: 'list',
+            name: 'managerId',
+            message: 'Select the manager for the employee',
+            choices: [{ name: 'None', value: null }, ...employees.map(employee => ({ name: employee.manager, value: employee.id }))]
+        },
 ]);
 
 const query = 'INSERT INTO employees (first_name, last_name, roles_id, manager_id) VALUES (?, ?, ?, ?)';
@@ -219,7 +219,7 @@ const query = 'INSERT INTO employees (first_name, last_name, roles_id, manager_i
 
 ////////////////////////////////////
 async function updateEmployeeRole() {
-    const employees = await queryAsync('SELECT id, CONCAT(first_name, " ", last_name) AS employee FROM employees');
+    const employees = await queryAsync('SELECT id, CONCAT(first_name, " ", last_name) AS employee FROM employees;');
     const roles = await queryAsync('SELECT id, title FROM roles');
 
     const answers = await promptAsync([
@@ -233,7 +233,7 @@ async function updateEmployeeRole() {
             type: 'list',
             name: 'roleId',
             message: 'Select the new role for the employee:',
-            choices: roles.map(roles => ({ name: role.title, value: role.id })),
+            choices: roles.map(roles => ({ name: roles.title, value: roles.id })),
         },
     ])
 
