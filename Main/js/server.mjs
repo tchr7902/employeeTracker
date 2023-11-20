@@ -1,7 +1,10 @@
+// importing all frameworks
 import express from 'express';
 import mysql from 'mysql2';
 import inquirer from 'inquirer';
 
+
+// building app and middleware
 const port = process.env.PORT || 3001;
 const app = express();
 
@@ -9,7 +12,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 
-////////////////////////////////////
+// creating connection to mysql database
 const db = mysql.createConnection( {
     host: 'localhost',
     user: 'root',
@@ -20,15 +23,17 @@ const db = mysql.createConnection( {
 );
 
 
-////////////////////////////////////
+// setting up the Promise
 function promptAsync(questions) {
     return new Promise((resolve) => {
         inquirer.prompt(questions).then(resolve);
     })
 }
 
-
+// initialization function
 async function init() {
+
+    // options for user to choose from
     const answers = await promptAsync([
         {
             type: 'list',
@@ -47,6 +52,7 @@ async function init() {
         },
     ])
 
+    // calling functions depending on given answer from the prompt
     if(answers.action === 'View all departments') {
         viewAllDepartments();
     } else if (answers.action === 'View all roles') {
@@ -70,7 +76,7 @@ async function init() {
     }
 }
 
-////////////////////////////////////
+// inserts sql query and uses console.table to display results from the departments table
 async function viewAllDepartments() {
     const query = 'SELECT * FROM departments';
 
@@ -85,7 +91,7 @@ async function viewAllDepartments() {
 };
 
 
-////////////////////////////////////
+// selects all from roles table, uses console.table to display results
 async function viewAllRoles() {
     const query = 'SELECT * FROM roles';
 
@@ -100,7 +106,7 @@ async function viewAllRoles() {
 };
 
 
-////////////////////////////////////
+// selects all employees table, uses console.table to display results
 async function viewAllEmployees() {
     const query = 'SELECT * FROM employees';
 
@@ -115,7 +121,7 @@ async function viewAllEmployees() {
 };
 
 
-////////////////////////////////////
+// function to add department, prompts for the name, then inserts the department into the departments table using a query
 async function addDepartment() {
     const answers = await promptAsync([
         {
@@ -138,10 +144,12 @@ async function addDepartment() {
 };
 
 
-////////////////////////////////////
+// function to add a role
 async function addRole() {
+    // gets all departments, so the role can be put into a certain department
     const departments = await queryAsync('SELECT id, name FROM departments')
     
+    // prompts for name, salary, and department of new role
     const answers = await promptAsync([
                 {
                     type: 'input',
@@ -161,6 +169,7 @@ async function addRole() {
                 },
             ])
 
+        // inserts new role and all corresponding info into the roles table
         const query = 'INSERT INTO roles (title, salary, departments_id) VALUES (?, ?, ?)';
 
         try {
@@ -174,12 +183,14 @@ async function addRole() {
 };
 
 
-////////////////////////////////////
+// function to add employee
 async function addEmployee() {
 
+    // queries to select the roles and managers
     const roles = await queryAsync('SELECT id, title FROM roles;');
     const employees = await queryAsync('SELECT id, CONCAT(first_name, " ", last_name) AS manager FROM employees;');
 
+    // prompts for first name, last name, role, and the manager for new employee
     const answers = await promptAsync([
         {
             type: 'input',
@@ -205,6 +216,7 @@ async function addEmployee() {
         },
 ]);
 
+// query to insert the new employee into employees db
 const query = 'INSERT INTO employees (first_name, last_name, roles_id, manager_id) VALUES (?, ?, ?, ?)';
 
     try {
@@ -217,11 +229,13 @@ const query = 'INSERT INTO employees (first_name, last_name, roles_id, manager_i
     init();
 }
 
-////////////////////////////////////
+// function to update an employees role
 async function updateEmployeeRole() {
+    // queries to select employees and their role
     const employees = await queryAsync('SELECT id, CONCAT(first_name, " ", last_name) AS employee FROM employees;');
     const roles = await queryAsync('SELECT id, title FROM roles');
 
+    // prompts to choose an employee to update, and what role to change them too
     const answers = await promptAsync([
         {
             type: 'list',
@@ -237,6 +251,7 @@ async function updateEmployeeRole() {
         },
     ])
 
+    // updates employee role
     const query = 'UPDATE employees SET roles_id = ? WHERE id = ?';
 
     try {
@@ -250,7 +265,7 @@ async function updateEmployeeRole() {
 };
 
 
-////////////////////////////////////
+// promise resolve
 function queryAsync(sql, params) {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (err, results) => {
